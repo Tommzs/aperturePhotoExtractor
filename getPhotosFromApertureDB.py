@@ -79,7 +79,7 @@ def copy_photos(album_photos_dict, originals_path, output_path, dry_run, logger)
                         logger.info("Copying {} to {}.".format(source, album_path))
                     print("Copying {} to {}.".format(source, album_path))
                     if not dry_run:
-                        copy2(source, album_path)
+                        copy2(str(source), str(album_path))
 
 
 def main():
