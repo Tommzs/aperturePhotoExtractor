@@ -65,18 +65,18 @@ def copy_photos(album_photos_dict, originals_path, output_path, dry_run, logger)
         album_path = output_path / album
         album_path.mkdir(exist_ok=True)
         if not album_path.is_dir():
-            print(f"Could not create folder {album_path}")
+            print("Could not create folder {}".format(album_path))
         else:
             for photo in photos:
                 source = originals_path / photo
                 if not source.is_file():
                     if logger is not None:
-                        logger.warning(f"Photo {source} does not exits.")
-                    print(f"Photo {source} does not exits.")
+                        logger.warning("Photo {} does not exits.".format(source))
+                    print("Photo {} does not exits.".format(source))
                 else:
                     if logger is not None:
-                        logger.info(f"Copying {source} to {album_path}.")
-                    print(f"Copying {source} to {album_path}.")
+                        logger.info("Copying {} to {}.".format(source, album_path))
+                    print("Copying {} to {}.".format(source, album_path))
                     if not dry_run:
                         copy2(source, album_path)
 
@@ -108,20 +108,20 @@ def main():
     output_path = Path(args.output_folder)
 
     if not library_path.is_dir():
-        raise Exception(f"Incorrect path to library: {library_path}")
+        raise Exception("Incorrect path to library: {}".format(library_path))
 
     db_path = library_path / "database" / "Photos.sqlite"
 
     if not db_path.is_file() or db_path.suffix != '.sqlite':
-        raise Exception(f"Could not find database/Photos.sqlite in given path to library: {library_path}")
+        raise Exception("Could not find database/Photos.sqlite in given path to library: {}".format(library_path))
 
     originals_path = library_path / "originals"
     if not originals_path.is_dir():
-        raise Exception(f"Could not find originals directory in given path to library: {library_path}")
+        raise Exception("Could not find originals directory in given path to library: {}".format(library_path))
     
     output_path.mkdir(exist_ok=True)
     if not output_path.is_dir():
-        raise Exception(f"Invalid path output folder: {output_path}")
+        raise Exception("Invalid path output folder: {}".format(output_path))
 
     photo_db = sqlite3.connect(str(db_path))
 
@@ -136,8 +136,8 @@ def main():
     for photos in album_photos_dict.values():
         total_sum+=len(photos)
 
-    print(f"Number of albums: {total_length}")
-    print(f"Number of photos: {total_sum}")
+    print("Number of albums: {}".format(total_length))
+    print("Number of photos: {}".format(total_sum))
 
     copy_photos(album_photos_dict, originals_path, output_path, args.dry_run, logger)
 
