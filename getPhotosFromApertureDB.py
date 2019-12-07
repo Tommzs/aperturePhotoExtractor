@@ -2,6 +2,7 @@ import sqlite3
 import argparse
 from pathlib import Path
 from shutil import copy2
+import logging
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -14,6 +15,8 @@ def parse_args():
                         help='Folder to store extracted folders')
     parser.add_argument('--dry-run', required=False,
                         action='store_true', help="If set true, does not do anything, only prints what it would do.")
+    parser.add_argument('--log', required=False,
+                        action='store_true', help="If set true, logs the copying process into file.")
     args = parser.parse_args()
     return args
 
@@ -57,7 +60,7 @@ def export_photos(album_dict, asset_dict, asset_album_dict):
     return album_photos_dict
 
 
-def copy_photos(album_photos_dict, originals_path, output_path, dry_run):
+def copy_photos(album_photos_dict, originals_path, output_path, dry_run, logger):
     for album, photos in album_photos_dict.items():
         album_path = output_path / album
         album_path.mkdir(exist_ok=True)
@@ -66,9 +69,13 @@ def copy_photos(album_photos_dict, originals_path, output_path, dry_run):
         else:
             for photo in photos:
                 source = originals_path / photo
-                if False: #not source.is_file():
+                if not source.is_file():
+                    if logger is not None:
+                        logger.warning(f"Photo {source} does not exits.")
                     print(f"Photo {source} does not exits.")
                 else:
+                    if logger is not None:
+                        logger.info(f"Copying {source} to {album_path}.")
                     print(f"Copying {source} to {album_path}.")
                     if not dry_run:
                         copy2(source, album_path)
@@ -76,6 +83,26 @@ def copy_photos(album_photos_dict, originals_path, output_path, dry_run):
 
 def main():
     args = parse_args()
+
+    do_log = args.log
+
+    logger = None
+    if do_log:
+        logger = logging.getLogger('aperture_photo_extract')
+        logger.setLevel(logging.DEBUG)
+        # create file handler which logs even debug messages
+        fh = logging.FileHandler('photo_extract.log')
+        fh.setLevel(logging.DEBUG)
+        # create console handler with a higher log level
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.ERROR)
+        # create formatter and add it to the handlers
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+        ch.setFormatter(formatter)
+        # add the handlers to the logger
+        logger.addHandler(fh)
+        logger.addHandler(ch)
 
     library_path = Path(args.aperture)
     output_path = Path(args.output_folder)
@@ -112,7 +139,7 @@ def main():
     print(f"Number of albums: {total_length}")
     print(f"Number of photos: {total_sum}")
 
-    copy_photos(album_photos_dict, originals_path, output_path, args.dry_run)
+    copy_photos(album_photos_dict, originals_path, output_path, args.dry_run, logger)
 
 
 if __name__ == '__main__':
