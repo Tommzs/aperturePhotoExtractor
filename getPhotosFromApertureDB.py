@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 from shutil import copy2
 import logging
+import unicodedata
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -62,7 +63,7 @@ def export_photos(album_dict, asset_dict, asset_album_dict):
 
 def copy_photos(album_photos_dict, originals_path, output_path, dry_run, logger):
     for album, photos in album_photos_dict.items():
-        album_path = output_path / album
+        album_path = output_path / unicodedata.normalize('NFKD', album).encode('ASCII', 'ignore').decode('unicode_escape')
         album_path.mkdir(exist_ok=True)
         if not album_path.is_dir():
             print("Could not create folder {}".format(album_path))
